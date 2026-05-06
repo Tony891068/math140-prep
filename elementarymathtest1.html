@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math 140 Study App</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:wght@400;600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --surface: #191919;
+    --surface2: #222222;
+    --border: #2e2e2e;
+    --accent: #c8f135;
+    --accent2: #5b8dee;
+    --accent3: #f1a135;
+    --accent4: #f13535;
+    --text: #f0ede6;
+    --text2: #888;
+    --text3: #555;
+    --radius: 10px;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+    --serif: 'Fraunces', serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; }
+
+  /* NAV */
+  .nav { display: flex; align-items: center; justify-content: space-between; padding: 1rem 2rem; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg); z-index: 100; }
+  .nav-logo { font-family: var(--serif); font-size: 20px; color: var(--accent); letter-spacing: -0.5px; }
+  .nav-tabs { display: flex; gap: 4px; }
+  .nav-tab { padding: 6px 14px; border-radius: 6px; border: none; background: transparent; color: var(--text2); font-family: var(--sans); font-size: 13px; cursor: pointer; transition: all 0.15s; }
+  .nav-tab:hover { color: var(--text); background: var(--surface); }
+  .nav-tab.active { background: var(--surface2); color: var(--accent); }
+  .nav-status { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+
+  /* PAGES */
+  .page { display: none; padding: 2rem; max-width: 860px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  /* HERO */
+  .hero { padding: 3rem 2rem 2rem; max-width: 860px; margin: 0 auto; }
+  .hero h1 { font-family: var(--serif); font-size: 42px; font-weight: 600; line-height: 1.1; letter-spacing: -1px; margin-bottom: 0.5rem; }
+  .hero h1 span { color: var(--accent); }
+  .hero p { color: var(--text2); font-size: 15px; margin-bottom: 2rem; }
+  .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 2rem; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; }
+  .stat-label { font-size: 11px; color: var(--text3); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .stat-val { font-size: 28px; font-family: var(--serif); color: var(--accent); }
+  .stat-sub { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+  /* CARDS */
+  .tool-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .tool-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; cursor: pointer; transition: all 0.15s; }
+  .tool-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .tool-icon { font-size: 22px; margin-bottom: 0.5rem; }
+  .tool-title { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+  .tool-desc { font-size: 12px; color: var(--text2); line-height: 1.5; }
+
+  /* SECTION HEADERS */
+  .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+  .section-title { font-family: var(--serif); font-size: 22px; font-weight: 600; }
+  .section-sub { font-size: 12px; color: var(--text2); }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-family: var(--mono); }
+  .badge-green { background: rgba(200,241,53,0.12); color: var(--accent); }
+  .badge-blue { background: rgba(91,141,238,0.12); color: var(--accent2); }
+  .badge-amber { background: rgba(241,161,53,0.12); color: var(--accent3); }
+  .badge-red { background: rgba(241,53,53,0.12); color: var(--accent4); }
+
+  /* QUIZ */
+  .quiz-nav { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.25rem; }
+  .qn-btn { width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text2); font-size: 12px; font-family: var(--mono); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
+  .qn-btn:hover { border-color: var(--accent2); color: var(--text); }
+  .qn-btn.current { border-color: var(--accent2); color: var(--accent2); background: rgba(91,141,238,0.1); }
+  .qn-btn.answered { background: var(--surface2); color: var(--text); }
+  .qn-btn.flagged { border-color: var(--accent3); color: var(--accent3); }
+  .qn-btn.correct { background: rgba(200,241,53,0.1); border-color: var(--accent); color: var(--accent); }
+  .qn-btn.wrong { background: rgba(241,53,53,0.1); border-color: var(--accent4); color: var(--accent4); }
+
+  .q-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1rem; }
+  .q-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+  .q-topic { font-family: var(--mono); font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
+  .q-pts { font-family: var(--mono); font-size: 11px; color: var(--accent3); }
+  .q-text { font-size: 16px; line-height: 1.8; margin-bottom: 1.25rem; white-space: pre-wrap; }
+  .q-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; color: var(--text); font-family: var(--sans); font-size: 14px; resize: vertical; min-height: 90px; line-height: 1.6; transition: border-color 0.15s; }
+  .q-input:focus { outline: none; border-color: var(--accent2); }
+  .q-input:disabled { opacity: 0.5; }
+
+  .confidence-row { display: flex; gap: 8px; margin-top: 0.75rem; align-items: center; }
+  .conf-label { font-size: 12px; color: var(--text2); }
+  .conf-btn { padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border); background: transparent; font-size: 12px; cursor: pointer; transition: all 0.15s; font-family: var(--sans); }
+  .conf-btn:hover { background: var(--surface2); }
+  .conf-btn.easy { color: var(--accent); border-color: var(--accent); background: rgba(200,241,53,0.08); }
+  .conf-btn.shaky { color: var(--accent3); border-color: var(--accent3); background: rgba(241,161,53,0.08); }
+  .conf-btn.lost { color: var(--accent4); border-color: var(--accent4); background: rgba(241,53,53,0.08); }
+
+  .solution-box { margin-top: 1rem; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; }
+  .solution-box .sol-label { font-family: var(--mono); font-size: 11px; color: var(--accent2); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
+  .solution-box pre { font-family: var(--mono); font-size: 13px; color: var(--text); white-space: pre-wrap; line-height: 1.7; }
+  .self-grade { display: flex; gap: 8px; margin-top: 0.75rem; align-items: center; }
+  .self-grade span { font-size: 12px; color: var(--text2); }
+  .sg-btn { padding: 6px 16px; border-radius: 6px; border: 1px solid var(--border); background: transparent; font-size: 13px; cursor: pointer; font-family: var(--sans); transition: all 0.15s; }
+  .sg-btn:hover { background: var(--surface2); }
+  .sg-btn.got { color: var(--accent); border-color: var(--accent); }
+  .sg-btn.missed { color: var(--accent4); border-color: var(--accent4); }
+
+  .q-actions { display: flex; gap: 8px; margin-top: 0.75rem; }
+  .flag-btn { padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--text2); font-size: 12px; cursor: pointer; font-family: var(--sans); transition: all 0.15s; }
+  .flag-btn:hover { border-color: var(--accent3); color: var(--accent3); }
+  .flag-btn.active { border-color: var(--accent3); color: var(--accent3); background: rgba(241,161,53,0.08); }
+
+  .nav-btns { display: flex; gap: 8px; }
+  .nav-btn-q { padding: 8px 18px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text); font-size: 14px; cursor: pointer; font-family: var(--sans); transition: all 0.15s; }
+  .nav-btn-q:hover { background: var(--surface2); }
+
+  .submit-bar { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 1rem; }
+  .submit-bar-info { font-size: 13px; color: var(--text2); }
+  .submit-btn { padding: 10px 28px; border-radius: 8px; border: none; background: var(--accent); color: #000; font-size: 14px; font-weight: 500; cursor: pointer; font-family: var(--sans); transition: all 0.15s; }
+  .submit-btn:hover { opacity: 0.88; }
+  .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .submit-btn.submitted { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+
+  /* TIMER */
+  .timer-bar { display: flex; align-items: center; gap: 12px; padding: 0.75rem 1.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 1rem; }
+  .timer-display { font-family: var(--mono); font-size: 22px; color: var(--accent); }
+  .timer-display.warn { color: var(--accent3); }
+  .timer-display.danger { color: var(--accent4); }
+  .timer-label { font-size: 12px; color: var(--text2); }
+  .timer-controls { display: flex; gap: 8px; margin-left: auto; }
+  .timer-btn { padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--text2); font-size: 12px; cursor: pointer; font-family: var(--sans); }
+  .timer-btn:hover { background: var(--surface2); color: var(--text); }
+  .timer-select { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 12px; padding: 5px 8px; font-family: var(--sans); cursor: pointer; }
+
+  /* WEAKNESS TRACKER */
+  .topic-row { display: flex; align-items: center; gap: 12px; padding: 0.85rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; }
+  .topic-name { font-size: 14px; flex: 1; }
+  .topic-bar-bg { flex: 2; height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+  .topic-bar-fill { height: 100%; border-radius: 99px; transition: width 0.4s; }
+  .topic-attempts { font-family: var(--mono); font-size: 11px; color: var(--text3); min-width: 60px; text-align: right; }
+  .topic-tag { font-size: 11px; padding: 3px 8px; border-radius: 99px; font-family: var(--mono); min-width: 80px; text-align: center; }
+
+  /* MISTAKE JOURNAL */
+  .mistake-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 10px; }
+  .mistake-q { font-size: 14px; font-weight: 500; margin-bottom: 0.5rem; }
+  .mistake-yours { font-size: 13px; color: var(--accent4); margin-bottom: 0.25rem; }
+  .mistake-correct { font-size: 13px; color: var(--accent); }
+  .mistake-meta { font-family: var(--mono); font-size: 11px; color: var(--text3); margin-top: 0.5rem; }
+
+  /* SESSION SUMMARY */
+  .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 1.5rem; }
+  .summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; text-align: center; }
+  .summary-val { font-family: var(--serif); font-size: 32px; margin-bottom: 4px; }
+  .summary-label { font-size: 12px; color: var(--text2); }
+
+  /* SCORE PREDICTOR */
+  .predictor-topic { display: flex; align-items: center; gap: 12px; padding: 0.75rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; }
+  .predictor-name { font-size: 13px; flex: 1; }
+  .predictor-pts { font-family: var(--mono); font-size: 12px; color: var(--text2); }
+  .predictor-score { font-family: var(--mono); font-size: 13px; min-width: 50px; text-align: right; }
+
+  /* FORMULA RECALL */
+  .recall-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; text-align: center; margin-bottom: 1rem; }
+  .recall-prompt { font-family: var(--serif); font-size: 20px; margin-bottom: 1.5rem; line-height: 1.5; }
+  .recall-input { width: 100%; max-width: 400px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; color: var(--text); font-family: var(--mono); font-size: 14px; text-align: center; }
+  .recall-input:focus { outline: none; border-color: var(--accent2); }
+  .recall-reveal { margin-top: 1rem; padding: 1rem; background: var(--bg); border-radius: 8px; font-family: var(--mono); font-size: 14px; color: var(--accent); }
+
+  /* STUDY PLANNER */
+  .plan-day { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 8px; display: flex; gap: 1rem; align-items: flex-start; }
+  .plan-day-num { font-family: var(--serif); font-size: 22px; color: var(--accent); min-width: 40px; }
+  .plan-day-content { flex: 1; }
+  .plan-day-title { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+  .plan-day-topics { font-size: 12px; color: var(--text2); line-height: 1.6; }
+
+  /* PRIORITY QUEUE */
+  .priority-item { display: flex; align-items: center; gap: 12px; padding: 0.85rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; }
+  .priority-rank { font-family: var(--serif); font-size: 20px; color: var(--text3); min-width: 28px; }
+  .priority-name { font-size: 14px; flex: 1; }
+  .priority-reason { font-size: 11px; color: var(--text2); }
+  .priority-urgency { font-size: 11px; padding: 3px 8px; border-radius: 99px; font-family: var(--mono); }
+
+  /* BUTTONS */
+  .btn { padding: 10px 22px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text); font-size: 14px; cursor: pointer; font-family: var(--sans); transition: all 0.15s; }
+  .btn:hover { background: var(--surface2); }
+  .btn-accent { background: var(--accent); color: #000; border-color: var(--accent); }
+  .btn-accent:hover { opacity: 0.88; background: var(--accent); }
+  .btn-sm { padding: 6px 14px; font-size: 12px; }
+
+  /* FORM */
+  .form-group { margin-bottom: 1rem; }
+  .form-label { font-size: 12px; color: var(--text2); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px; }
+  .form-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; color: var(--text); font-family: var(--sans); font-size: 14px; }
+  .form-input:focus { outline: none; border-color: var(--accent2); }
+
+  /* DIVIDER */
+  hr { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem 1.25rem; font-size: 13px; z-index: 999; opacity: 0; transform: translateY(10px); transition: all 0.2s; pointer-events: none; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* LEGEND */
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 1rem; }
+  .leg { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2); }
+  .leg-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+  /* EMPTY STATE */
+  .empty { text-align: center; padding: 3rem; color: var(--text3); font-size: 14px; }
+  .empty-icon { font-size: 32px; margin-bottom: 1rem; }
+
+  @media (max-width: 600px) {
+    .nav { padding: 0.75rem 1rem; }
+    .hero { padding: 1.5rem 1rem; }
+    .page { padding: 1rem; }
+    .stat-row { grid-template-columns: repeat(2, 1fr); }
+    .tool-grid { grid-template-columns: 1fr; }
+    .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    .hero h1 { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo">Math 140</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('home')">Home</button>
+    <button class="nav-tab" onclick="showPage('quiz')">Quiz</button>
+    <button class="nav-tab" onclick="showPage('tracker')">Tracker</button>
+    <button class="nav-tab" onclick="showPage('journal')">Journal</button>
+    <button class="nav-tab" onclick="showPage('recall')">Recall</button>
+    <button class="nav-tab" onclick="showPage('planner')">Planner</button>
+  </div>
+  <div class="nav-status" id="nav-status">connecting...</div>
+</nav>
+
+<!-- HOME -->
+<div class="hero" id="page-home-hero">
+  <h1>Your personal<br><span>study companion.</span></h1>
+  <p>Track your progress, drill your weaknesses, and walk into your final confident.</p>
+  <div class="stat-row" id="home-stats">
+    <div class="stat-card"><div class="stat-label">Sessions</div><div class="stat-val" id="stat-sessions">0</div><div class="stat-sub">total attempts</div></div>
+    <div class="stat-card"><div class="stat-label">Avg Score</div><div class="stat-val" id="stat-avg">—</div><div class="stat-sub">across sessions</div></div>
+    <div class="stat-card"><div class="stat-label">Top Topic</div><div class="stat-val" style="font-size:16px;margin-top:4px" id="stat-top">—</div><div class="stat-sub">strongest area</div></div>
+    <div class="stat-card"><div class="stat-label">Focus On</div><div class="stat-val" style="font-size:16px;margin-top:4px" id="stat-weak">—</div><div class="stat-sub">needs work</div></div>
+  </div>
+  <div class="tool-grid">
+    <div class="tool-card" onclick="showPage('quiz')">
+      <div class="tool-icon">📝</div>
+      <div class="tool-title">Practice Quiz</div>
+      <div class="tool-desc">Timed exam simulator with free-response questions. Submit to reveal solutions and self-grade.</div>
+    </div>
+    <div class="tool-card" onclick="showPage('tracker')">
+      <div class="tool-icon">📊</div>
+      <div class="tool-title">Weakness Tracker</div>
+      <div class="tool-desc">Hybrid tracker showing your current and cumulative performance per topic with priority queue.</div>
+    </div>
+    <div class="tool-card" onclick="showPage('journal')">
+      <div class="tool-icon">📖</div>
+      <div class="tool-title">Mistake Journal</div>
+      <div class="tool-desc">Every question you missed, logged with your answer and the correct solution side by side.</div>
+    </div>
+    <div class="tool-card" onclick="showPage('recall')">
+      <div class="tool-icon">⚡</div>
+      <div class="tool-title">Formula Recall</div>
+      <div class="tool-desc">Description-based formula testing. Build reflexes for applying the right concept fast.</div>
+    </div>
+    <div class="tool-card" onclick="showPage('planner')">
+      <div class="tool-icon">📅</div>
+      <div class="tool-title">Study Planner</div>
+      <div class="tool-desc">Input your exam date and study hours. Get a day-by-day plan based on your weak topics.</div>
+    </div>
+    <div class="tool-card" onclick="showPage('tracker')">
+      <div class="tool-icon">🎯</div>
+      <div class="tool-title">Score Predictor</div>
+      <div class="tool-desc">Projected exam score based on your tracker history and exam point distribution.</div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ PAGE -->
+<div class="page" id="page-quiz">
+  <div class="section-head">
+    <div class="section-title">Practice Quiz</div>
+    <span class="badge badge-green" id="quiz-badge">elementary math</span>
+  </div>
+
+  <div class="timer-bar">
+    <div>
+      <div class="timer-label">Time remaining</div>
+      <div class="timer-display" id="timer-display">50:00</div>
+    </div>
+    <div class="timer-controls">
+      <select class="timer-select" id="timer-select" onchange="setTimerDuration()">
+        <option value="50">50 min (regular)</option>
+        <option value="120">120 min (final)</option>
+        <option value="30">30 min (drill)</option>
+      </select>
+      <button class="timer-btn" id="timer-start-btn" onclick="toggleTimer()">Start</button>
+      <button class="timer-btn" onclick="resetTimer()">Reset</button>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="leg"><div class="leg-dot" style="border:1px solid #5b8dee"></div>current</div>
+    <div class="leg"><div class="leg-dot" style="background:#222"></div>answered</div>
+    <div class="leg"><div class="leg-dot" style="border:1px solid #f1a135"></div>flagged</div>
+    <div class="leg"><div class="leg-dot" style="background:rgba(200,241,53,0.15)"></div>correct</div>
+    <div class="leg"><div class="leg-dot" style="background:rgba(241,53,53,0.15)"></div>incorrect</div>
+  </div>
+
+  <div class="quiz-nav" id="quiz-nav"></div>
+
+  <div class="submit-bar">
+    <div class="submit-bar-info" id="submit-bar-info">Answer all questions, then submit to see solutions.</div>
+    <button class="submit-btn" id="submit-btn" onclick="submitQuiz()">Submit Exam</button>
+  </div>
+
+  <div id="quiz-q-area"></div>
+</div>
+
+<!-- TRACKER PAGE -->
+<div class="page" id="page-tracker">
+  <div class="section-head">
+    <div class="section-title">Weakness Tracker</div>
+    <span class="badge badge-blue">hybrid · last 3 sessions</span>
+  </div>
+
+  <div id="tracker-content">
+    <div class="empty"><div class="empty-icon">📊</div>Complete at least one quiz to see your tracker.</div>
+  </div>
+
+  <hr>
+  <div class="section-head" style="margin-top:1.5rem">
+    <div class="section-title" style="font-size:16px">Study Priority Queue</div>
+  </div>
+  <div id="priority-content">
+    <div class="empty"><div class="empty-icon">🎯</div>Complete a quiz to generate your priority queue.</div>
+  </div>
+
+  <hr>
+  <div class="section-head" style="margin-top:1.5rem">
+    <div class="section-title" style="font-size:16px">Score Predictor</div>
+  </div>
+  <div id="predictor-content">
+    <div class="empty"><div class="empty-icon">📈</div>Complete a quiz to see your projected score.</div>
+  </div>
+</div>
+
+<!-- JOURNAL PAGE -->
+<div class="page" id="page-journal">
+  <div class="section-head">
+    <div class="section-title">Mistake Journal</div>
+    <button class="btn btn-sm" onclick="clearJournal()">Clear all</button>
+  </div>
+  <div id="journal-content">
+    <div class="empty"><div class="empty-icon">📖</div>No mistakes logged yet. Keep it that way!</div>
+  </div>
+</div>
+
+<!-- RECALL PAGE -->
+<div class="page" id="page-recall">
+  <div class="section-head">
+    <div class="section-title">Formula Recall</div>
+    <span class="badge badge-amber" id="recall-progress">0 / 0</span>
+  </div>
+  <div id="recall-area"></div>
+</div>
+
+<!-- PLANNER PAGE -->
+<div class="page" id="page-planner">
+  <div class="section-head">
+    <div class="section-title">Study Planner</div>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:1.5rem">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:1rem">
+      <div class="form-group" style="margin:0">
+        <label class="form-label">Exam date</label>
+        <input type="date" class="form-input" id="plan-date">
+      </div>
+      <div class="form-group" style="margin:0">
+        <label class="form-label">Hours/day available</label>
+        <input type="number" class="form-input" id="plan-hours" value="2" min="0.5" max="10" step="0.5">
+      </div>
+      <div class="form-group" style="margin:0">
+        <label class="form-label">Exam duration</label>
+        <select class="form-input" id="plan-exam-type">
+          <option value="regular">50 min (regular)</option>
+          <option value="final">2 hours (final)</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-accent" onclick="generatePlan()">Generate plan</button>
+  </div>
+  <div id="planner-content">
+    <div class="empty"><div class="empty-icon">📅</div>Set your exam date and click Generate plan.</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAnfUP6DhTO7sC9lcGdMboImcrTD7KvU_M",
+  authDomain: "math140x.firebaseapp.com",
+  projectId: "math140x",
+  storageBucket: "math140x.firebasestorage.app",
+  messagingSenderId: "854281672978",
+  appId: "1:854281672978:web:4e3e37f0e5650586e9fbcb",
+  measurementId: "G-EQTLX1VHG3"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const USER_ID = "student_1";
+
+// ── DATA ──────────────────────────────────────────────────────────────────────
+
+const QUESTIONS = [
+  { id:1, pts:5, topic:"Addition", text:"Solve:\n3 + 5 = ?", answer:"8", type:"input" },
+  { id:2, pts:5, topic:"Subtraction", text:"Solve:\n9 − 4 = ?", answer:"5", type:"input" },
+  { id:3, pts:5, topic:"Multiplication", text:"Solve:\n6 × 7 = ?", answer:"42", type:"input" },
+  { id:4, pts:5, topic:"Division", text:"Solve:\n48 ÷ 6 = ?", answer:"8", type:"input" },
+  { id:5, pts:5, topic:"Addition", text:"Solve:\n7 + 8 = ?", answer:"15", type:"input" },
+  { id:6, pts:5, topic:"Subtraction", text:"Solve:\n15 − 7 = ?", answer:"8", type:"input" },
+  { id:7, pts:5, topic:"Multiplication", text:"Solve:\n8 × 9 = ?", answer:"72", type:"input" },
+  { id:8, pts:5, topic:"Division", text:"Solve:\n63 ÷ 7 = ?", answer:"9", type:"input" },
+  { id:9, pts:5, topic:"Addition", text:"Solve:\n14 + 28 = ?", answer:"42", type:"input" },
+  { id:10, pts:5, topic:"Subtraction", text:"Solve:\n100 − 37 = ?", answer:"63", type:"input" },
+];
+
+const FORMULA_CARDS = [
+  { prompt: "What is 7 + 8?", answer: "15" },
+  { prompt: "What is 12 − 5?", answer: "7" },
+  { prompt: "What is 6 × 6?", answer: "36" },
+  { prompt: "What is 56 ÷ 8?", answer: "7" },
+  { prompt: "What is 9 + 13?", answer: "22" },
+  { prompt: "What is 25 − 16?", answer: "9" },
+  { prompt: "What is 7 × 8?", answer: "56" },
+  { prompt: "What is 81 ÷ 9?", answer: "9" },
+];
+
+const TOPIC_POINTS = { "Addition": 10, "Subtraction": 10, "Multiplication": 10, "Division": 10 };
+
+// ── APP STATE ─────────────────────────────────────────────────────────────────
+
+let userData = { sessions: [], mistakes: [], recallStats: {} };
+let quizState = { current: 0, answers: {}, flags: {}, grades: {}, confidence: {}, submitted: false };
+let timerInterval = null;
+let timerSeconds = 50 * 60;
+let timerRunning = false;
+let recallIndex = 0;
+let recallRevealed = false;
+let recallShuffled = [...FORMULA_CARDS].sort(() => Math.random() - 0.5);
+
+// ── FIREBASE OPS ──────────────────────────────────────────────────────────────
+
+async function loadData() {
+  try {
+    const ref = doc(db, "users", USER_ID);
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      userData = { sessions: [], mistakes: [], recallStats: {}, ...snap.data() };
+    }
+    document.getElementById('nav-status').textContent = 'synced';
+    refreshHomeStats();
+    refreshRecallProgress();
+  } catch(e) {
+    document.getElementById('nav-status').textContent = 'offline';
+  }
+}
+
+async function saveData() {
+  try {
+    const ref = doc(db, "users", USER_ID);
+    await setDoc(ref, userData);
+    document.getElementById('nav-status').textContent = 'saved ✓';
+    setTimeout(() => document.getElementById('nav-status').textContent = 'synced', 2000);
+  } catch(e) {
+    document.getElementById('nav-status').textContent = 'save failed';
+  }
+}
+
+// ── NAVIGATION ─────────────────────────────────────────────────────────────────
+
+window.showPage = function(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-home-hero').style.display = page === 'home' ? '' : 'none';
+
+  if (page !== 'home') {
+    document.getElementById('page-' + page).classList.add('active');
+  }
+
+  const tabs = ['home','quiz','tracker','journal','recall','planner'];
+  const idx = tabs.indexOf(page);
+  document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+
+  if (page === 'quiz') renderQuiz();
+  if (page === 'tracker') renderTracker();
+  if (page === 'journal') renderJournal();
+  if (page === 'recall') renderRecall();
+  if (page === 'planner') {}
+};
+
+// ── QUIZ ───────────────────────────────────────────────────────────────────────
+
+function renderQuizNav() {
+  const nav = document.getElementById('quiz-nav');
+  nav.innerHTML = QUESTIONS.map((q, i) => {
+    let cls = 'qn-btn';
+    if (i === quizState.current) cls += ' current';
+    else if (quizState.submitted) {
+      if (quizState.grades[q.id] === 'correct') cls += ' correct';
+      else if (quizState.grades[q.id] === 'wrong') cls += ' wrong';
+      else if (quizState.answers[q.id]) cls += ' answered';
+    } else {
+      if (quizState.flags[q.id]) cls += ' flagged';
+      else if (quizState.answers[q.id]) cls += ' answered';
+    }
+    return `<button class="${cls}" onclick="goToQ(${i})">${i+1}</button>`;
+  }).join('');
+
+  const answered = Object.keys(quizState.answers).filter(k => quizState.answers[k]).length;
+  document.getElementById('submit-bar-info').textContent =
+    quizState.submitted ? 'Exam submitted. Self-grade each question below.' :
+    `${answered} of ${QUESTIONS.length} answered`;
+}
+
+function renderQuiz() {
+  renderQuizNav();
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[quizState.current];
+  const area = document.getElementById('quiz-q-area');
+  const ans = quizState.answers[q.id] || '';
+  const grade = quizState.grades[q.id];
+  const conf = quizState.confidence[q.id];
+  const flagged = quizState.flags[q.id];
+
+  let solutionHtml = '';
+  if (quizState.submitted) {
+    const gradeHtml = !grade
+      ? `<div class="self-grade"><span>Did you get it?</span>
+          <button class="sg-btn got" onclick="gradeQuestion(${q.id},'correct')">Got it ✓</button>
+          <button class="sg-btn missed" onclick="gradeQuestion(${q.id},'wrong')">Missed it ✗</button>
+         </div>`
+      : `<div style="font-size:13px;margin-top:0.75rem;color:${grade==='correct'?'var(--accent)':'var(--accent4)'}">
+          ${grade==='correct'?'✓ Marked correct':'✗ Marked incorrect'}
+         </div>`;
+
+    solutionHtml = `
+      <div class="solution-box">
+        <div class="sol-label">Solution</div>
+        <pre>${q.answer}</pre>
+      </div>
+      ${gradeHtml}`;
+  }
+
+  const confHtml = !quizState.submitted ? `
+    <div class="confidence-row">
+      <span class="conf-label">Confidence:</span>
+      <button class="conf-btn ${conf==='easy'?'easy':''}" onclick="setConfidence(${q.id},'easy')">Easy</button>
+      <button class="conf-btn ${conf==='shaky'?'shaky':''}" onclick="setConfidence(${q.id},'shaky')">Shaky</button>
+      <button class="conf-btn ${conf==='lost'?'lost':''}" onclick="setConfidence(${q.id},'lost')">Lost</button>
+    </div>` : '';
+
+  area.innerHTML = `
+    <div class="q-card">
+      <div class="q-meta">
+        <span class="q-topic">${q.topic}</span>
+        <span class="q-pts">${q.pts} pts</span>
+      </div>
+      <div class="q-text">${q.text}</div>
+      <textarea class="q-input" ${quizState.submitted?'disabled':''} placeholder="Your answer..."
+        oninput="saveAnswer(${q.id},this.value)">${ans}</textarea>
+      ${confHtml}
+      ${!quizState.submitted ? `<div class="q-actions">
+        <button class="flag-btn ${flagged?'active':''}" onclick="toggleFlag(${q.id})">${flagged?'★ Flagged':'☆ Flag for review'}</button>
+      </div>` : ''}
+      ${solutionHtml}
+    </div>
+    <div class="nav-btns">
+      ${quizState.current>0?`<button class="nav-btn-q" onclick="goToQ(${quizState.current-1})">← Prev</button>`:''}
+      ${quizState.current<QUESTIONS.length-1?`<button class="nav-btn-q" onclick="goToQ(${quizState.current+1})">Next →</button>`:''}
+    </div>`;
+}
+
+window.goToQ = function(i) { quizState.current = i; renderQuizNav(); renderQuestion(); };
+window.saveAnswer = function(id, val) { quizState.answers[id] = val; renderQuizNav(); };
+window.toggleFlag = function(id) { quizState.flags[id] = !quizState.flags[id]; renderQuizNav(); renderQuestion(); };
+window.setConfidence = function(id, val) { quizState.confidence[id] = val; renderQuestion(); };
+
+window.gradeQuestion = async function(id, result) {
+  quizState.grades[id] = result;
+  const q = QUESTIONS.find(q => q.id === id);
+
+  if (result === 'wrong') {
+    const mistake = {
+      questionId: id,
+      topic: q.topic,
+      question: q.text,
+      yourAnswer: quizState.answers[id] || '(blank)',
+      correctAnswer: q.answer,
+      date: new Date().toLocaleDateString()
+    };
+    userData.mistakes = userData.mistakes || [];
+    userData.mistakes.push(mistake);
+    await saveData();
+  }
+  renderQuizNav();
+  renderQuestion();
+};
+
+window.submitQuiz = async function() {
+  if (quizState.submitted) return;
+  quizState.submitted = true;
+
+  const btn = document.getElementById('submit-btn');
+  btn.textContent = 'Submitted';
+  btn.classList.add('submitted');
+
+  const session = {
+    date: new Date().toLocaleDateString(),
+    timestamp: Date.now(),
+    answers: { ...quizState.answers },
+    grades: {},
+    confidence: { ...quizState.confidence },
+    topics: {}
+  };
+  userData.sessions = userData.sessions || [];
+  userData.sessions.push(session);
+  await saveData();
+
+  renderQuizNav();
+  renderQuestion();
+  showToast('Exam submitted! Self-grade each question.');
+};
+
+// After grading updates session
+window.gradeQuestion = async function(id, result) {
+  quizState.grades[id] = result;
+  const q = QUESTIONS.find(q => q.id === id);
+
+  const lastSession = userData.sessions[userData.sessions.length - 1];
+  if (lastSession) {
+    lastSession.grades[id] = result;
+    lastSession.topics[q.topic] = lastSession.topics[q.topic] || { correct: 0, total: 0 };
+    lastSession.topics[q.topic].total++;
+    if (result === 'correct') lastSession.topics[q.topic].correct++;
+  }
+
+  if (result === 'wrong') {
+    userData.mistakes = userData.mistakes || [];
+    userData.mistakes.push({
+      questionId: id, topic: q.topic,
+      question: q.text,
+      yourAnswer: quizState.answers[id] || '(blank)',
+      correctAnswer: q.answer,
+      date: new Date().toLocaleDateString()
+    });
+  }
+
+  await saveData();
+  renderQuizNav();
+  renderQuestion();
+  refreshHomeStats();
+};
+
+// ── TIMER ──────────────────────────────────────────────────────────────────────
+
+window.setTimerDuration = function() {
+  const mins = parseInt(document.getElementById('timer-select').value);
+  timerSeconds = mins * 60;
+  updateTimerDisplay();
+};
+
+window.toggleTimer = function() {
+  const btn = document.getElementById('timer-start-btn');
+  if (timerRunning) {
+    clearInterval(timerInterval);
+    timerRunning = false;
+    btn.textContent = 'Resume';
+  } else {
+    timerRunning = true;
+    btn.textContent = 'Pause';
+    timerInterval = setInterval(() => {
+      timerSeconds--;
+      updateTimerDisplay();
+      if (timerSeconds <= 0) {
+        clearInterval(timerInterval);
+        timerRunning = false;
+        showToast('Time is up! Submitting exam...');
+        if (!quizState.submitted) submitQuiz();
+      }
+    }, 1000);
+  }
+};
+
+window.resetTimer = function() {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  document.getElementById('timer-start-btn').textContent = 'Start';
+  setTimerDuration();
+};
+
+function updateTimerDisplay() {
+  const m = Math.floor(timerSeconds / 60);
+  const s = timerSeconds % 60;
+  const display = document.getElementById('timer-display');
+  if (!display) return;
+  display.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  display.className = 'timer-display';
+  if (timerSeconds < 300) display.classList.add('danger');
+  else if (timerSeconds < 600) display.classList.add('warn');
+}
+
+// ── TRACKER ────────────────────────────────────────────────────────────────────
+
+function getTopicStats() {
+  const sessions = userData.sessions || [];
+  const recent = sessions.slice(-3);
+  const stats = {};
+
+  Object.keys(TOPIC_POINTS).forEach(t => {
+    stats[t] = { recent: { correct: 0, total: 0 }, all: { correct: 0, total: 0 }, trend: [] };
+  });
+
+  sessions.forEach(s => {
+    Object.entries(s.topics || {}).forEach(([topic, data]) => {
+      if (!stats[topic]) stats[topic] = { recent: { correct:0,total:0 }, all: { correct:0,total:0 }, trend: [] };
+      stats[topic].all.correct += data.correct;
+      stats[topic].all.total += data.total;
+      stats[topic].trend.push(Math.round((data.correct/data.total)*100));
+    });
+  });
+
+  recent.forEach(s => {
+    Object.entries(s.topics || {}).forEach(([topic, data]) => {
+      if (!stats[topic]) stats[topic] = { recent: { correct:0,total:0 }, all: { correct:0,total:0 }, trend: [] };
+      stats[topic].recent.correct += data.correct;
+      stats[topic].recent.total += data.total;
+    });
+  });
+
+  return stats;
+}
+
+function renderTracker() {
+  const stats = getTopicStats();
+  const topics = Object.keys(stats);
+  const hasData = topics.some(t => stats[t].all.total > 0);
+
+  if (!hasData) {
+    document.getElementById('tracker-content').innerHTML =
+      '<div class="empty"><div class="empty-icon">📊</div>Complete at least one quiz to see your tracker.</div>';
+    document.getElementById('priority-content').innerHTML =
+      '<div class="empty"><div class="empty-icon">🎯</div>Complete a quiz to generate your priority queue.</div>';
+    document.getElementById('predictor-content').innerHTML =
+      '<div class="empty"><div class="empty-icon">📈</div>Complete a quiz to see your projected score.</div>';
+    return;
+  }
+
+  // Tracker rows
+  let trackerHtml = '';
+  topics.filter(t => stats[t].all.total > 0).forEach(topic => {
+    const s = stats[topic];
+    const recentPct = s.recent.total > 0 ? Math.round((s.recent.correct/s.recent.total)*100) : null;
+    const allPct = s.all.total > 0 ? Math.round((s.all.correct/s.all.total)*100) : 0;
+    const trend = s.trend.length >= 2 ? (s.trend[s.trend.length-1] > s.trend[s.trend.length-2] ? '↑' : s.trend[s.trend.length-1] < s.trend[s.trend.length-2] ? '↓' : '→') : '';
+
+    let tagColor, tagLabel;
+    const pct = recentPct !== null ? recentPct : allPct;
+    if (pct >= 80) { tagColor = 'badge-green'; tagLabel = 'strong'; }
+    else if (pct >= 60) { tagColor = 'badge-amber'; tagLabel = 'improving'; }
+    else { tagColor = 'badge-red'; tagLabel = 'needs work'; }
+
+    const barColor = pct >= 80 ? 'var(--accent)' : pct >= 60 ? 'var(--accent3)' : 'var(--accent4)';
+
+    trackerHtml += `
+      <div class="topic-row">
+        <div class="topic-name">${topic} ${trend}</div>
+        <div class="topic-bar-bg"><div class="topic-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+        <div class="topic-attempts">${recentPct !== null ? recentPct+'%' : '—'} recent<br>${allPct}% all-time</div>
+        <span class="topic-tag badge ${tagColor}">${tagLabel}</span>
+      </div>`;
+  });
+  document.getElementById('tracker-content').innerHTML = trackerHtml;
+
+  // Priority queue
+  const sorted = topics
+    .filter(t => stats[t].all.total > 0)
+    .map(t => {
+      const s = stats[t];
+      const pct = s.recent.total > 0 ? (s.recent.correct/s.recent.total) : (s.all.correct/s.all.total);
+      const pts = TOPIC_POINTS[t] || 10;
+      const urgency = (1 - pct) * pts;
+      return { topic: t, pct: Math.round(pct*100), urgency, pts };
+    })
+    .sort((a,b) => b.urgency - a.urgency);
+
+  let priorityHtml = '';
+  sorted.forEach((item, i) => {
+    const color = item.pct < 60 ? 'badge-red' : item.pct < 80 ? 'badge-amber' : 'badge-green';
+    const label = item.pct < 60 ? 'urgent' : item.pct < 80 ? 'review' : 'maintain';
+    priorityHtml += `
+      <div class="priority-item">
+        <div class="priority-rank">${i+1}</div>
+        <div>
+          <div class="priority-name">${item.topic}</div>
+          <div class="priority-reason">${item.pts} exam points · ${item.pct}% recent accuracy</div>
+        </div>
+        <span class="priority-urgency badge ${color}">${label}</span>
+      </div>`;
+  });
+  document.getElementById('priority-content').innerHTML = priorityHtml;
+
+  // Score predictor
+  const totalExamPts = Object.values(TOPIC_POINTS).reduce((a,b)=>a+b,0);
+  let predicted = 0;
+  let predictorHtml = '';
+  topics.filter(t => stats[t].all.total > 0).forEach(topic => {
+    const s = stats[topic];
+    const pct = s.recent.total > 0 ? (s.recent.correct/s.recent.total) : (s.all.correct/s.all.total);
+    const pts = TOPIC_POINTS[topic] || 10;
+    const est = Math.round(pct * pts);
+    predicted += est;
+    const color = est >= pts*0.8 ? 'var(--accent)' : est >= pts*0.6 ? 'var(--accent3)' : 'var(--accent4)';
+    predictorHtml += `
+      <div class="predictor-topic">
+        <div class="predictor-name">${topic}</div>
+        <div class="predictor-pts">${pts} pts available</div>
+        <div class="predictor-score" style="color:${color}">${est} / ${pts}</div>
+      </div>`;
+  });
+
+  const pctPredicted = Math.round((predicted/totalExamPts)*100);
+  document.getElementById('predictor-content').innerHTML = `
+    <div class="summary-grid" style="margin-bottom:1rem">
+      <div class="summary-card">
+        <div class="summary-val" style="color:var(--accent)">${predicted}</div>
+        <div class="summary-label">Projected points</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-val" style="color:var(--accent2)">${pctPredicted}%</div>
+        <div class="summary-label">Projected grade</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-val" style="color:var(--accent3)">${totalExamPts}</div>
+        <div class="summary-label">Total points</div>
+      </div>
+    </div>
+    ${predictorHtml}`;
+}
+
+// ── HOME STATS ─────────────────────────────────────────────────────────────────
+
+function refreshHomeStats() {
+  const sessions = userData.sessions || [];
+  document.getElementById('stat-sessions').textContent = sessions.length;
+
+  if (!sessions.length) return;
+
+  const scores = sessions.map(s => {
+    const grades = Object.values(s.grades || {});
+    if (!grades.length) return null;
+    const correct = grades.filter(g => g === 'correct').length;
+    return Math.round((correct/grades.length)*100);
+  }).filter(s => s !== null);
+
+  if (scores.length) {
+    const avg = Math.round(scores.reduce((a,b)=>a+b,0)/scores.length);
+    document.getElementById('stat-avg').textContent = avg + '%';
+  }
+
+  const stats = getTopicStats();
+  const topics = Object.keys(stats).filter(t => stats[t].all.total > 0);
+  if (topics.length) {
+    const best = topics.sort((a,b) => {
+      const pa = stats[a].all.total > 0 ? stats[a].all.correct/stats[a].all.total : 0;
+      const pb = stats[b].all.total > 0 ? stats[b].all.correct/stats[b].all.total : 0;
+      return pb - pa;
+    });
+    document.getElementById('stat-top').textContent = best[0];
+    document.getElementById('stat-weak').textContent = best[best.length-1];
+  }
+}
+
+// ── JOURNAL ────────────────────────────────────────────────────────────────────
+
+function renderJournal() {
+  const mistakes = userData.mistakes || [];
+  if (!mistakes.length) {
+    document.getElementById('journal-content').innerHTML =
+      '<div class="empty"><div class="empty-icon">📖</div>No mistakes logged yet. Keep it that way!</div>';
+    return;
+  }
+  const html = [...mistakes].reverse().map(m => `
+    <div class="mistake-card">
+      <div class="mistake-q">${m.question.trim()}</div>
+      <div class="mistake-yours">Your answer: ${m.yourAnswer}</div>
+      <div class="mistake-correct">Correct: ${m.correctAnswer}</div>
+      <div class="mistake-meta">${m.topic} · ${m.date}</div>
+    </div>`).join('');
+  document.getElementById('journal-content').innerHTML = html;
+}
+
+window.clearJournal = async function() {
+  if (!confirm('Clear all journal entries?')) return;
+  userData.mistakes = [];
+  await saveData();
+  renderJournal();
+};
+
+// ── RECALL ─────────────────────────────────────────────────────────────────────
+
+function refreshRecallProgress() {
+  document.getElementById('recall-progress').textContent =
+    `${recallIndex} / ${FORMULA_CARDS.length}`;
+}
+
+function renderRecall() {
+  if (recallIndex >= recallShuffled.length) {
+    document.getElementById('recall-area').innerHTML = `
+      <div class="recall-card">
+        <div class="recall-prompt">All done! 🎉</div>
+        <button class="btn btn-accent" onclick="restartRecall()">Restart</button>
+      </div>`;
+    return;
+  }
+  const card = recallShuffled[recallIndex];
+  recallRevealed = false;
+  document.getElementById('recall-area').innerHTML = `
+    <div class="recall-card">
+      <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-bottom:1rem;text-transform:uppercase;letter-spacing:0.5px">Card ${recallIndex+1} of ${recallShuffled.length}</div>
+      <div class="recall-prompt">${card.prompt}</div>
+      <input class="recall-input" id="recall-input" placeholder="Type your answer..." onkeydown="if(event.key==='Enter')checkRecall()">
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:1rem">
+        <button class="btn btn-accent" onclick="checkRecall()">Check</button>
+        <button class="btn" onclick="revealRecall()">Reveal</button>
+      </div>
+      <div id="recall-feedback"></div>
+    </div>`;
+  document.getElementById('recall-input').focus();
+  refreshRecallProgress();
+}
+
+window.checkRecall = function() {
+  const input = document.getElementById('recall-input');
+  if (!input) return;
+  const val = input.value.trim();
+  const card = recallShuffled[recallIndex];
+  const correct = val === card.answer;
+  document.getElementById('recall-feedback').innerHTML =
+    correct
+    ? `<div style="color:var(--accent);margin-top:1rem;font-size:14px">✓ Correct!</div>
+       <button class="btn btn-sm" style="margin-top:0.75rem" onclick="nextRecall()">Next →</button>`
+    : `<div style="color:var(--accent4);margin-top:1rem;font-size:14px">✗ Answer: <span style="color:var(--accent)">${card.answer}</span></div>
+       <button class="btn btn-sm" style="margin-top:0.75rem" onclick="nextRecall()">Next →</button>`;
+};
+
+window.revealRecall = function() {
+  const card = recallShuffled[recallIndex];
+  document.getElementById('recall-feedback').innerHTML =
+    `<div class="recall-reveal">${card.answer}</div>
+     <button class="btn btn-sm" style="margin-top:0.75rem" onclick="nextRecall()">Next →</button>`;
+};
+
+window.nextRecall = function() { recallIndex++; renderRecall(); };
+window.restartRecall = function() {
+  recallIndex = 0;
+  recallShuffled = [...FORMULA_CARDS].sort(() => Math.random() - 0.5);
+  renderRecall();
+};
+
+// ── PLANNER ────────────────────────────────────────────────────────────────────
+
+window.generatePlan = function() {
+  const dateVal = document.getElementById('plan-date').value;
+  const hours = parseFloat(document.getElementById('plan-hours').value) || 2;
+  if (!dateVal) { showToast('Please set an exam date.'); return; }
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const exam = new Date(dateVal); exam.setHours(0,0,0,0);
+  const daysLeft = Math.max(1, Math.round((exam - today) / 86400000));
+
+  const stats = getTopicStats();
+  const topics = Object.keys(TOPIC_POINTS);
+  const ranked = topics.map(t => {
+    const s = stats[t];
+    const pct = s && s.all.total > 0
+      ? (s.recent.total > 0 ? s.recent.correct/s.recent.total : s.all.correct/s.all.total)
+      : 0.5;
+    return { topic: t, pct, urgency: (1-pct) * (TOPIC_POINTS[t]||10) };
+  }).sort((a,b) => b.urgency - a.urgency);
+
+  let html = `<div style="font-size:13px;color:var(--text2);margin-bottom:1rem">${daysLeft} days · ${hours}h/day until exam</div>`;
+
+  for (let d = 0; d < Math.min(daysLeft, 7); d++) {
+    const dayDate = new Date(today);
+    dayDate.setDate(today.getDate() + d);
+    const label = d === 0 ? 'Today' : d === daysLeft-1 ? 'Exam day' : dayDate.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+    const topicsForDay = d === daysLeft-1
+      ? ['Review all topics — light review only']
+      : ranked.slice(0, 2).map(r => `${r.topic} (${Math.round(r.pct*100)}% accuracy)`);
+
+    html += `
+      <div class="plan-day">
+        <div class="plan-day-num">${d+1}</div>
+        <div class="plan-day-content">
+          <div class="plan-day-title">${label} · ${hours}h</div>
+          <div class="plan-day-topics">${topicsForDay.join(' · ')}</div>
+        </div>
+      </div>`;
+  }
+
+  if (daysLeft > 7) html += `<div style="font-size:12px;color:var(--text3);margin-top:0.5rem">Showing first 7 of ${daysLeft} days.</div>`;
+  document.getElementById('planner-content').innerHTML = html;
+};
+
+// ── TOAST ──────────────────────────────────────────────────────────────────────
+
+window.showToast = function(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+};
+
+// ── INIT ───────────────────────────────────────────────────────────────────────
+
+await loadData();
+document.getElementById('page-home-hero').style.display = '';
+</script>
+</body>
+</html>
